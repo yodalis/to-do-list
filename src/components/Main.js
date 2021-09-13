@@ -9,18 +9,43 @@ export default class Main extends Component {
     tasks: [],
   };
 
+  componentDidMount() {
+    const tasks = JSON.parse(localStorage.getItem('Tasks'));
+    if (!tasks) return;
+    this.setState({ tasks });
+  }
+
+  componentDidUpdate(prevPops, prevState) {
+    const { tasks } = this.state;
+
+    if (tasks === prevState.tasks) return;
+
+    localStorage.setItem('Tasks', JSON.stringify(tasks));
+  }
+
   handleSubmit = (e) => {
     e.preventDefault();
-    const { tasks } = this.state;
+    const { tasks, index } = this.state;
     let { newTask } = this.state;
     newTask = newTask.trim();
 
     if (tasks.indexOf(newTask) !== -1) return;
 
-    const newTasks = [...tasks];
-    this.setState({
-      tasks: [...newTasks, newTask],
-    });
+    let newTasks = [...tasks];
+    if (index === -1) {
+      this.setState({
+        tasks: [...newTasks, newTask],
+        newTask: '',
+      });
+    } else {
+      newTasks = [...tasks];
+      newTasks[index] = newTask;
+
+      this.setState({
+        tasks: [...newTasks],
+        index: -1,
+      });
+    }
   }
 
   handleInputChange = (e) => {
@@ -30,7 +55,11 @@ export default class Main extends Component {
   }
 
   handleEdit = (e, index) => {
-    console.log('Edit', index);
+    const { tasks } = this.state;
+    this.setState({
+      index,
+      newTask: tasks[index],
+    });
   }
 
   handleDelete = (e, index) => {
